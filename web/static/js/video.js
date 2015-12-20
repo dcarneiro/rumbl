@@ -24,14 +24,13 @@ let Video = {
       this.renderAnnotation(msgContainer, resp)
     })
 
-    vidChannel.on("ping", ({count}) => console.log("PING", count))
-
     vidChannel.join()
-      .receive("ok", resp => console.log("joined the video channel", resp))
-      .receive("error", reason => console.log("join failed", reason))
-  }
+      .receive("ok", resp => console.log("joined the video channel", resp) )
+      .receive("error", reason => console.log("join failed", reason) )
 
-  renderAnnotation(msgContainer, {user, body, alt}) {
+  },
+
+  renderAnnotation(msgContainer, {user, body, at}){
     let template = document.createElement("div")
     template.innerHTML = `
     <b>${user.username}</b>: ${body}

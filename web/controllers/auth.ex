@@ -1,6 +1,8 @@
 defmodule Rumbl.Auth do
   import Plug.Conn
   import Comeonin.Bcrypt, only: [checkpw: 2]
+  import Phoenix.Controller
+  alias Rumbl.Router.Helpers
 
   def init(opts) do
     Keyword.fetch!(opts, :repo)
@@ -8,7 +10,6 @@ defmodule Rumbl.Auth do
 
   def call(conn, repo) do
     user_id = get_session(conn, :user_id)
-
     cond do
       user = conn.assigns[:current_user] ->
         put_current_user(conn, user)
@@ -21,14 +22,21 @@ defmodule Rumbl.Auth do
 
   def login(conn, user) do
     conn
-    |> assign(:current_user, user)
+    |> put_current_user(user)
     |> put_session(:user_id, user.id)
     |> configure_session(renew: true)
   end
 
   defp put_current_user(conn, user) do
+    token = Phoenix.Token.sign(conn, "user socket", user.id)
+
     conn
     |> assign(:current_user, user)
+    |> assign(:user_token, token)
+  end
+
+  def logout(conn) do
+    configure_session(conn, drop: true)
   end
 
   def login_by_username_and_pass(conn, username, given_pass, opts) do
@@ -44,13 +52,6 @@ defmodule Rumbl.Auth do
         {:error, :not_found, conn}
     end
   end
-
-  def logout(conn) do
-    configure_session(conn, drop: true)
-  end
-
-  import Phoenix.Controller
-  alias Rumbl.Router.Helpers
 
   def authenticate_user(conn, _opts) do
     if conn.assigns.current_user do
