@@ -8,8 +8,7 @@ defmodule Rumbl.VideoController do
 
   defp load_categories(conn, _) do
     categories =
-      Repo.all from(c in Rumbl.Category,
-                    order_by: c.name,
+      Repo.all from(c in Rumbl.Category.alphabetical(),
                     select: {c.name, c.id})
     assign(conn, :categories, categories)
   end
